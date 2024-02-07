@@ -1,0 +1,21 @@
+
+h1 {
+    text-align: center;
+    color: gray;
+}
+
+.timer-stopper{
+    font-style: italic;
+    border:5px double;
+    width: 50px;
+    text-align: center;
+    color: rgb(0, 60, 255);
+    margin: auto;
+    height: auto;
+    background-color: lightgray;
+    margin-bottom: 20px;  
+  }
+
+.game-level{
+    text-align: center;
+}

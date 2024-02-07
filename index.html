@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body onload="onInit()">
+    <h1>Minesweeper</h1>
+
+    <div class="timer-stopper">
+        <span class="seconds">00</span>
+    </div>
+
+    <div class="game-level">
+        <button onclick="onLevelChoice(1)">beginner</button>
+        <button onclick="onLevelChoice(2)">medium</button>
+        <button onclick="onLevelChoice(3)">Expert</button>
+    </div>
+
+    <table>
+        <tbody class="board"></tbody>
+    </table>
+
+    <script src="js/main.js"></script>
+    <script src="js/util.js"></script>
+</body>
+</html>
