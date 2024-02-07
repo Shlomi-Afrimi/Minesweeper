@@ -1,3 +1,27 @@
+table {
+    border: 3px solid;
+    margin: 50px auto;
+    border-color: black;
+    border-radius: 5%;
+}
+
+
+.board td {
+    width: 30px;
+    height: 30px;
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+    background-color: lightgray;
+    transition: background-color 0.5s;
+    cursor: pointer;
+    color: red;
+    border-radius: 10%;
+}
+
+.board td:hover {
+    background-color: gray;
+}
 
 h1 {
     text-align: center;
@@ -8,12 +32,15 @@ h1 {
     font-style: italic;
     border:5px double;
     width: 50px;
+    padding: 10px;
     text-align: center;
     color: rgb(0, 60, 255);
     margin: auto;
     height: auto;
     background-color: lightgray;
-    margin-bottom: 20px;  
+    margin-bottom: 20px; 
+    font-size: 30px; 
+    border-radius: 100%;
   }
 
 .game-level{
