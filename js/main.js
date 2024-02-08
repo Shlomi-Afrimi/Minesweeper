@@ -93,6 +93,8 @@ function onCellClicked(elCell, cellI, cellJ){
     }
     if(gBoard[cellI][cellJ].isMine === false) elCell.style.backgroundColor = 'white'
     else elCell.style.backgroundColor = 'red'
+    console.log(gBoard[cellI][cellJ].minesAroundCount)
+    console.log
     if (gBoard[cellI][cellJ].minesAroundCount > 0) {
         elCell.innerHTML = board[cellI][cellJ].minesAroundCount
         console.log(elCell.innerHTML)
