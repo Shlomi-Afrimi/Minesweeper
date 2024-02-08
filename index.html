@@ -6,24 +6,30 @@
     <title>Document</title>
     <link rel="stylesheet" href="css/style.css" />
 </head>
-<body onload="onInit()">
-    <h1>Minesweeper</h1>
+<body onload="onInit()" oncontextmenu="return false;" >
+    <h1 class="game-name">💣💣💣Minesweeper💣💣💣</h1>
 
-    <div class="timer-stopper">
+    <div class="top-data">
         <span class="seconds">00</span>
+        <span class="shownCount">0</span>
+        <span class="markedCount">0</span>
     </div>
 
     <div class="game-level">
-        <button onclick="onLevelChoice(0)">beginner</button>
-        <button onclick="onLevelChoice(1)">medium</button>
-        <button onclick="onLevelChoice(2)">Expert</button>
+        <button onclick="onLevelChosen(0)">beginner</button>
+        <button onclick="onLevelChosen(1)">medium</button>
+        <button onclick="onLevelChosen(2)">Expert</button>
     </div>
 
     <table class="board-container">
         <tbody class="board"></tbody>
     </table>
 
-    <script src="js/main.js"></script>
+    <div class="additional">
+        <span class="lives">💜💜💜</span>
+    </div>
+
     <script src="js/util.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,48 +1,64 @@
+
+
 table {
     border: 3px solid;
-    margin: 50px auto;
+    margin: 20px auto;
     border-color: black;
-    border-radius: 5%;
+    border-radius: 2%;
 }
 
 
 .board td {
-    width: 30px;
-    height: 30px;
+    width: 15px;
+    height: 15px;
     border: 1px solid black;
     padding: 10px;
     text-align: center;
     background-color: lightgray;
     transition: background-color 0.5s;
     cursor: pointer;
-    color: red;
+    color: black;
     border-radius: 10%;
 }
 
 .board td:hover {
     background-color: gray;
-}
+}   
 
 h1 {
     text-align: center;
-    color: gray;
+    color: rgb(109, 37, 37);
 }
 
-.timer-stopper{
-    font-style: italic;
-    border:5px double;
+.seconds{
+    /* font-style: italic; */
+    border:10px solid;
     width: 50px;
     padding: 10px;
     text-align: center;
-    color: rgb(0, 60, 255);
+    color: red ;
+    border-color: gray;
     margin: auto;
     height: auto;
-    background-color: lightgray;
+    background-color: black;
     margin-bottom: 20px; 
     font-size: 30px; 
-    border-radius: 100%;
+    font-weight:bold;
+    /* border-radius: 100%; */
   }
 
 .game-level{
     text-align: center;
+}
+
+.additional{
+    text-align: center;
+    font-size: 2em;
+}
+
+.exploded{
+    background-color: red;
+    pointer-events: none;
+
+
 }
