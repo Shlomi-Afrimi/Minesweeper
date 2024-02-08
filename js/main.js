@@ -11,8 +11,10 @@ var startTime
 const MINE = 'MINE'
 const MINE_IMAGE = '💣'
 const FLAG_IMAGE = '🚩'
-const LIVE = '💜'
-var gLivesCount =[LIVE, LIVE, LIVE]
+const LIFE = '💜'
+var gLivesLostCount = 0
+//const unCoveredCellColor = 'lightgrey'
+var gLivesLeft =[LIFE, LIFE, LIFE]
 var gBoard = []
 var gMat = []
 var gLevelChosen
@@ -20,9 +22,9 @@ var gTimerInterval
 var shownCount = 0 /////////////////////////////////////////////////////////////
 //const SIZE = 4 
 var clicksCount = 0
-var gLevel = [{size: 4, mines: 2},
-              {size: 8, mines: 14},
-              {size: 12, mines: 32}
+var gLevel = [{size: 4, mines: 2, lives: 1},
+              {size: 8, mines: 14, lives: 2},
+              {size: 12, mines: 32, lives:3}
 ]
 
 gLevelChosen = gLevel[0]
@@ -30,8 +32,11 @@ gLevelChosen = gLevel[0]
 function onLevelChosen(choice){
     gLevelChosen = gLevel[choice]
     clearInterval(gTimerInterval)
-    gGame.secsPassed = 0
+    //gGame.secsPassed = 0
     gGame.isOn = true
+    gLivesLostCount = 0
+    //gLivesLeftCount = gLevelChosen.lives
+    //console.log(gLevelChosen.lives)
     onInit()
 }
 
@@ -40,6 +45,7 @@ function onInit(){
     gBoard =[]
     gMat = []
     clicksCount = 0
+    //gLifeLeftCount = 3
     gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -100,40 +106,54 @@ function renderBoard(gMat){
 }
 
 function onCellClicked(elCell, cellI, cellJ){
+
     if(clicksCount === 0){
         gBoard = buildBoard2(gMat)
         clicksCount = 1
+        gGame.secsPassed = 0
         startTime = Date.now()
-        gTimerInterval = setInterval(onTime ,1000)
-        //console.log(startTime)
+        gTimerInterval = setInterval(onTime ,500)
     }
-    if(gBoard[cellI][cellJ].isMine === true) {
-        // elCell.style.backgroundColor = 'red'
-        elCell.classlist.add('.exploded')
+    if(!gGame.isOn)return
+    if(elCell.style.backgroundColor === 'yellow') return
+    else if(gBoard[cellI][cellJ].isMine === true) {
+        elCell.style.backgroundColor = 'red'
+        gLivesLostCount++
+        checkGameOver()
         return
-        }   else if(elCell.style.backgroundColor !== 'white'){
+        }
+        else if(elCell.style.backgroundColor !== 'white'){
         elCell.style.backgroundColor = 'white'
         gGame.shownCount++
         }   
+    checkGameOver()
     if (gBoard[cellI][cellJ].minesAroundCount > 0) {
         elCell.innerHTML = gBoard[cellI][cellJ].minesAroundCount
     }
-    // if((gBoard[cellI][cellJ].isMine === false) && gBoard[cellI][cellJ].minesAroundCount === 0) expandShown(gBoard, elCell, cellI, cellJ)
     if((gBoard[cellI][cellJ].isMine === false) && gBoard[cellI][cellJ].minesAroundCount === 0) expandShown(cellI, cellJ)
+    
+    // setTimeout(() => {
+    //     checkGameOver()
+    // }, 200);
 }
 
 function onCellRightClicked(i ,j , event){
+    checkGameOver()
+    if (!gGame.isOn) return
     const elCell = document.querySelector(`.cell-${i}-${j}`)
-    
-//    if(event.button === 2 && gBoard[i][j].isMine === true && elCell.innerHTML === MINE_IMAGE) {
-//     elCell.innerHTML = FLAG_IMAGE
-   if(event.button === 2 && elCell.innerHTML === '') {
+   if(event.button === 2 && elCell.innerHTML === '' && elCell.style.backgroundColor !== 'red' && elCell.style.backgroundColor !== 'white') {
     elCell.innerHTML = FLAG_IMAGE
     gGame.markedCount++
+    elCell.style.backgroundColor ='yellow'
+    checkGameOver()
+    console.log(gGame.markedCount)
+    //elCell.classList.add('.flagged')
    } else if(event.button === 2 && elCell.innerHTML === FLAG_IMAGE){
     // elCell.innerHTML = MINE_IMAGE
     elCell.innerHTML = ''
     gGame.markedCount--
+    console.log(gGame.markedCount)
+    elCell.style.backgroundColor = 'pink'
    }
     
 }
@@ -163,30 +183,38 @@ function expandShown(k, l){
             const currCell = gBoard[i][j]
             const elCellNeg = document.querySelector(`.cell-${i}-${j}`)
 
-            if (currCell.isMine === true) continue
-            else if(elCellNeg.style.backgroundColor !== 'white'){
+            if (currCell.isMine === true || elCellNeg.style.backgroundColor === 'yellow') continue
+            else if(elCellNeg.style.backgroundColor !== 'white'){ //if(elCellNeg.style.backgroundColor === 'lightgrey'){
                 elCellNeg.style.backgroundColor = 'white'
                 gGame.shownCount++
                 elCellNeg.innerHTML = currCell.minesAroundCount
                 }   
         }
     }
+    checkGameOver()
 }
 
-//optional
+//fine without it
 function onCellMarked(elCell){
 
 }
-//optional
+
 function checkGameOver(){
+    if(gLivesLostCount >= gLevelChosen.lives){
+        console.log('lost' , gLivesLostCount , gLevelChosen.lives)
+        clearInterval(gTimerInterval)
+        var elBoard = document.querySelector('.board-container')
+        elBoard.classList.add = ('.endGame')
+        return !gGame.isOn
+        }
+    if(gGame.shownCount + gGame.markedCount + gLivesLostCount === gLevelChosen.size**2){
+        clearInterval(gTimerInterval)
+    } return !gGame.isOn
 
 }
 //optional
-function GameOver() {
-    //gGame.isOn = false
+function onGameOver() {
     clearInterval(gTimerInterval)
-    //clearInterval(gGlueInterval)
-    //showModal()
     
 }
 

@@ -1,4 +1,9 @@
-
+body{
+    background-color: lightblue;
+}
+.endGame{
+    pointer-events: none;
+}
 
 table {
     border: 3px solid;
@@ -14,7 +19,7 @@ table {
     border: 1px solid black;
     padding: 10px;
     text-align: center;
-    background-color: lightgray;
+    background-color:pink;
     transition: background-color 0.5s;
     cursor: pointer;
     color: black;
@@ -56,9 +61,12 @@ h1 {
     font-size: 2em;
 }
 
-.exploded{
+/* .exploded{
     background-color: red;
     pointer-events: none;
+} */
 
-
+.flagged{
+    background-color: yellow;
+    pointer-events: none;
 }
