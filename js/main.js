@@ -1,26 +1,21 @@
 'set strict'
 
 // gBoard – A Matrix containing cell objects: Each cell:
-//  { minesAroundCount: 4, isShown: false, isMine: false, isMarked: false } VV
+//  { minesAroundCount: 4, isShown: false, isMine: false, isMarked: false } V
 
-// gLevel = { SIZE: 4, MINES: 2 }VV
-
-
-var gGame = { isOn: false, shownCount: 0, markedCount: 0, secsPassed: 0 }
+var gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
 var startTime 
 const MINE = 'MINE'
 const MINE_IMAGE = '💣'
 const FLAG_IMAGE = '🚩'
 const LIFE = '💜'
 var gLivesLostCount = 0
-//const unCoveredCellColor = 'lightgrey'
-var gLivesLeft =[LIFE, LIFE, LIFE]
+//var gLivesLeft =[LIFE, LIFE, LIFE]
 var gBoard = []
 var gMat = []
 var gLevelChosen
 var gTimerInterval
-var shownCount = 0 /////////////////////////////////////////////////////////////
-//const SIZE = 4 
+// var shownCount = 0 /////////////////////////////////////////////////////////////
 var clicksCount = 0
 var gLevel = [{size: 4, mines: 2, lives: 1},
               {size: 8, mines: 14, lives: 2},
@@ -32,11 +27,11 @@ gLevelChosen = gLevel[0]
 function onLevelChosen(choice){
     gLevelChosen = gLevel[choice]
     clearInterval(gTimerInterval)
-    //gGame.secsPassed = 0
+    gGame.secsPassed = 0
+    const elTimer = document.querySelector('.seconds')
+    elTimer.innerText = (Math.round(gGame.secsPassed) + '').padStart(2, '0')
     gGame.isOn = true
     gLivesLostCount = 0
-    //gLivesLeftCount = gLevelChosen.lives
-    //console.log(gLevelChosen.lives)
     onInit()
 }
 
@@ -80,7 +75,7 @@ function buildBoard2(gMat){
 
         for (var j = 0; j < gLevelChosen.size; j++) {
             const negsCount1 = setMinesNegsCount(gMat ,i ,j)
-            boardNegs[i][j] = { minesAroundCount: negsCount1, isShown: false , isMine: gBoard[i][j].isMine, isMarked: false }
+            boardNegs[i][j] = { minesAroundCount: negsCount1, isShown: gBoard[i][j].isShown , isMine: gBoard[i][j].isMine, isMarked: false }
         }
     }
     gMat = boardNegs
@@ -124,6 +119,7 @@ function onCellClicked(elCell, cellI, cellJ){
         }
         else if(elCell.style.backgroundColor !== 'white'){
         elCell.style.backgroundColor = 'white'
+        gBoard[cellI][cellJ].isShown = true
         gGame.shownCount++
         }   
     checkGameOver()
@@ -131,29 +127,29 @@ function onCellClicked(elCell, cellI, cellJ){
         elCell.innerHTML = gBoard[cellI][cellJ].minesAroundCount
     }
     if((gBoard[cellI][cellJ].isMine === false) && gBoard[cellI][cellJ].minesAroundCount === 0) expandShown(cellI, cellJ)
-    
-    // setTimeout(() => {
-    //     checkGameOver()
-    // }, 200);
 }
 
 function onCellRightClicked(i ,j , event){
-    checkGameOver()
     if (!gGame.isOn) return
+    console.log(checkGameOver())
     const elCell = document.querySelector(`.cell-${i}-${j}`)
-   if(event.button === 2 && elCell.innerHTML === '' && elCell.style.backgroundColor !== 'red' && elCell.style.backgroundColor !== 'white') {
-    elCell.innerHTML = FLAG_IMAGE
-    gGame.markedCount++
-    elCell.style.backgroundColor ='yellow'
-    checkGameOver()
-    console.log(gGame.markedCount)
-    //elCell.classList.add('.flagged')
-   } else if(event.button === 2 && elCell.innerHTML === FLAG_IMAGE){
-    // elCell.innerHTML = MINE_IMAGE
-    elCell.innerHTML = ''
-    gGame.markedCount--
-    console.log(gGame.markedCount)
-    elCell.style.backgroundColor = 'pink'
+    if(event.button === 2 && elCell.innerHTML === '' && elCell.style.backgroundColor !== 'red' && elCell.style.backgroundColor !== 'white') {
+        gBoard[i][j].isMarked =true
+        elCell.innerHTML = FLAG_IMAGE
+        gGame.markedCount++
+        elCell.style.backgroundColor ='yellow'
+        const elMarkedCount = document.querySelector('.markedCount')
+        elMarkedCount.innerHTML = gGame.markedCount
+        checkGameOver()
+        console.log(gGame.markedCount)
+        //elCell.classList.add('.flagged')
+    } else if(event.button === 2 && elCell.innerHTML === FLAG_IMAGE){
+        gBoard[i][j].isMarked = false
+        // elCell.innerHTML = MINE_IMAGE
+        elCell.innerHTML = ''
+        gGame.markedCount--
+        console.log(gGame.markedCount)
+        elCell.style.backgroundColor = 'pink'
    }
     
 }
@@ -186,6 +182,7 @@ function expandShown(k, l){
             if (currCell.isMine === true || elCellNeg.style.backgroundColor === 'yellow') continue
             else if(elCellNeg.style.backgroundColor !== 'white'){ //if(elCellNeg.style.backgroundColor === 'lightgrey'){
                 elCellNeg.style.backgroundColor = 'white'
+                gBoard[k][l].isShown = true
                 gGame.shownCount++
                 elCellNeg.innerHTML = currCell.minesAroundCount
                 }   
@@ -203,13 +200,22 @@ function checkGameOver(){
     if(gLivesLostCount >= gLevelChosen.lives){
         console.log('lost' , gLivesLostCount , gLevelChosen.lives)
         clearInterval(gTimerInterval)
-        var elBoard = document.querySelector('.board-container')
-        elBoard.classList.add = ('.endGame')
-        return !gGame.isOn
+        // var elBoard = document.querySelector('.board-container')
+        // elBoard.classList.add = ('.endGame')
+        gGame.isOn = false
+        const elFinalResult = document.querySelector('.game-result')
+        elFinalResult.innerHTML = 'You lost!!!😫'
+        return gGame.isOn
         }
-    if(gGame.shownCount + gGame.markedCount + gLivesLostCount === gLevelChosen.size**2){
+    if( gLivesLostCount < gLevelChosen.lives && gGame.markedCount <= gLevelChosen.mines &&
+        gGame.shownCount + gGame.markedCount + gLivesLostCount === gLevelChosen.size**2){
+        console.log(gGame.markedCount , gLivesLostCount)
+        console.log(gGame.shownCount + gGame.markedCount + gLivesLostCount)
         clearInterval(gTimerInterval)
-    } return !gGame.isOn
+        gGame.isOn = false
+        const elFinalResult = document.querySelector('.game-result')
+        elFinalResult.innerHTML = 'You won!!!😎'
+    } return gGame.isOn
 
 }
 //optional
@@ -226,10 +232,10 @@ function onTime(){
     elTimer.innerText = (Math.round(gGame.secsPassed) + '').padStart(2, '0')
     
     const elShownCount = document.querySelector('.shownCount')
-    elShownCount.innerText = gGame.shownCount
+    elShownCount.innerHTML = gGame.shownCount
 
-    const elMarkedCount = document.querySelector('.markedCount')
-    elMarkedCount.innerText = gGame.markedCount
+    // const elMarkedCount = document.querySelector('.markedCount')
+    // elMarkedCount.innerHTML = gGame.markedCount
 }
 
 

@@ -1,6 +1,10 @@
 body{
     background-color: lightblue;
 }
+.board-container{
+    padding: 1px;
+    /* background-color: lightseagreen; */
+}
 .endGame{
     pointer-events: none;
 }
@@ -69,4 +73,24 @@ h1 {
 .flagged{
     background-color: yellow;
     pointer-events: none;
+}
+
+.hide{
+    display: none;
+}
+
+.game-result{
+    font-size: 2em;
+    /* text-align: center; */
+}
+
+.footer{
+    font-family: cursive;
+    font-size: 2em ;
+    color: purple;
+    /* font-style: italic; */
+}
+
+.pic{
+    width: 2em;
 }
