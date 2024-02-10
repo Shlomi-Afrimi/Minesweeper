@@ -7,13 +7,12 @@
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body onload="onInit()" oncontextmenu="return false;" >
-    <h1 class="game-name">💣💣💣Minesweeper💣💣💣</h1>
+    <h1 class="game-name">
+        <span class="seconds">00</span>💣💣💣Minesweeper💣💣💣
+    </h1>
 
     <div class="top-data">
-        <span class="seconds">00</span>
-        <span class="shownCount">0</span>
-        <span class="markedCount">0</span>
-        <span class="game-result"></span>
+        <button onclick="onSmiley()" class="game-result">😐</button>
     </div>
 
     <div class="game-level">
@@ -27,7 +26,7 @@
     </table>
 
     <div class="additional">
-        <span class="lives">💜💜💜</span>
+        <span class="lives">Lives left: 💜</span>
     </div>
 
     <div class="footer">

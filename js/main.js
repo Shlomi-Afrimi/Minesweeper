@@ -1,31 +1,34 @@
 'set strict'
 
-// gBoard – A Matrix containing cell objects: Each cell:
-//  { minesAroundCount: 4, isShown: false, isMine: false, isMarked: false } V
-
-var gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
-var startTime 
 const MINE = 'MINE'
 const MINE_IMAGE = '💣'
 const FLAG_IMAGE = '🚩'
 const LIFE = '💜'
-var gLivesLostCount = 0
-//var gLivesLeft =[LIFE, LIFE, LIFE]
-var gBoard = []
-var gMat = []
-var gLevelChosen
-var gTimerInterval
-// var shownCount = 0 /////////////////////////////////////////////////////////////
-var clicksCount = 0
+const LIFE_LOST = '🖤'
 var gLevel = [{size: 4, mines: 2, lives: 1},
-              {size: 8, mines: 14, lives: 2},
-              {size: 12, mines: 32, lives:3}
+    {size: 8, mines: 14, lives: 2},
+    {size: 12, mines: 32, lives:3}
 ]
 
+var startTime 
+var gChoice
+var gLevelChosen
+var gTimerInterval
 gLevelChosen = gLevel[0]
+var gBoard = []
+var gMat = []
+var livesArray = [LIFE]
+
+var gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
+var gLivesLostCount = 0
+var clicksCount = 0
 
 function onLevelChosen(choice){
+    const elSmiley = document.querySelector('.game-result')
+    elSmiley.innerHTML = '😐'
+    gChoice =choice
     gLevelChosen = gLevel[choice]
+    onShowLives()
     clearInterval(gTimerInterval)
     gGame.secsPassed = 0
     const elTimer = document.querySelector('.seconds')
@@ -36,11 +39,9 @@ function onLevelChosen(choice){
 }
 
 function onInit(){
-    //gGame.isOn = true
     gBoard =[]
     gMat = []
     clicksCount = 0
-    //gLifeLeftCount = 3
     gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -49,47 +50,42 @@ function onInit(){
 function buildBoard(){
     for (var i = 0; i < gLevelChosen.size; i++) {
         gMat.push([])
-
         for (var j = 0; j < gLevelChosen.size; j++) {
             gMat[i][j] = { minesAroundCount: 0, isShown: false, isMine: false, isMarked: false }
         }
     }
-    //gMat[1][1].isMine = gMat[2][2].isMine = true
+    return gMat
+}
+
+function buildBoard2(gBoard,cellI,cellJ){
     var minesDrawCount = 0
     while (minesDrawCount < gLevelChosen.mines){
         const drawI = [getRandomInt(0, gLevelChosen.size)]
         const drawJ = [getRandomInt(0, gLevelChosen.size)]
-        if (gMat[drawI][drawJ].isMine === false){
-            gMat[drawI][drawJ].isMine = true
+        if (gBoard[drawI][drawJ].isMine === false && (+[drawI] !== cellI || +[drawJ] !== cellJ)){
+            gBoard[drawI][drawJ].isMine = true
             minesDrawCount++
         }
     }
-    return gMat
-}
-
-function buildBoard2(gMat){
     const boardNegs = []
-    //var isMine2 = false
     for (var i = 0; i < gLevelChosen.size; i++) {
         boardNegs.push([])
 
         for (var j = 0; j < gLevelChosen.size; j++) {
-            const negsCount1 = setMinesNegsCount(gMat ,i ,j)
-            boardNegs[i][j] = { minesAroundCount: negsCount1, isShown: gBoard[i][j].isShown , isMine: gBoard[i][j].isMine, isMarked: false }
+            const negsCount1 = setMinesNegsCount(i ,j)
+            boardNegs[i][j] = { minesAroundCount: negsCount1, isShown: gBoard[i][j].isShown , isMine: gBoard[i][j].isMine, isMarked: gBoard[i][j].isMarked }
         }
     }
-    gMat = boardNegs
-    return gMat
+    gBoard =  boardNegs
+    return gBoard
 }
 
-function renderBoard(gMat){
+function renderBoard(gBoard){
     var strHTML = ''
-    for (var i = 0; i < gMat.length; i++) {
+    for (var i = 0; i < gBoard.length; i++) {
         strHTML += '<tr>'
-        for (var j = 0; j < gMat[0].length; j++) {
-            var cell = gMat[i][j]
-            // if(cell.isMine === true) cell = MINE_IMAGE 
-            // else cell = ''
+        for (var j = 0; j < gBoard[0].length; j++) {
+            var cell = gBoard[i][j]
             cell = ''
             const className = `cell cell-${i}-${j}`
             strHTML += `<td data-i=${i} data-j=${j} onmouseup="onCellRightClicked(${i}, ${j}, event)" onclick="onCellClicked(this, ${i}, ${j})" class="cell ${className}">${cell}</td>`
@@ -101,9 +97,8 @@ function renderBoard(gMat){
 }
 
 function onCellClicked(elCell, cellI, cellJ){
-
     if(clicksCount === 0){
-        gBoard = buildBoard2(gMat)
+        gBoard = buildBoard2(gBoard,cellI,cellJ)
         clicksCount = 1
         gGame.secsPassed = 0
         startTime = Date.now()
@@ -113,15 +108,18 @@ function onCellClicked(elCell, cellI, cellJ){
     if(elCell.style.backgroundColor === 'yellow') return
     else if(gBoard[cellI][cellJ].isMine === true) {
         elCell.style.backgroundColor = 'red'
+        elCell.innerHTML = '💣'
+        onLiveLost()
         gLivesLostCount++
         checkGameOver()
         return
         }
         else if(elCell.style.backgroundColor !== 'white'){
-        elCell.style.backgroundColor = 'white'
-        gBoard[cellI][cellJ].isShown = true
-        gGame.shownCount++
-        }   
+            gBoard[cellI][cellJ].isShown = true
+            elCell.style.backgroundColor = 'white'
+            gGame.shownCount++
+            } 
+
     checkGameOver()
     if (gBoard[cellI][cellJ].minesAroundCount > 0) {
         elCell.innerHTML = gBoard[cellI][cellJ].minesAroundCount
@@ -131,30 +129,28 @@ function onCellClicked(elCell, cellI, cellJ){
 
 function onCellRightClicked(i ,j , event){
     if (!gGame.isOn) return
-    console.log(checkGameOver())
+    // console.log(checkGameOver())
     const elCell = document.querySelector(`.cell-${i}-${j}`)
     if(event.button === 2 && elCell.innerHTML === '' && elCell.style.backgroundColor !== 'red' && elCell.style.backgroundColor !== 'white') {
         gBoard[i][j].isMarked =true
         elCell.innerHTML = FLAG_IMAGE
         gGame.markedCount++
         elCell.style.backgroundColor ='yellow'
-        const elMarkedCount = document.querySelector('.markedCount')
-        elMarkedCount.innerHTML = gGame.markedCount
         checkGameOver()
-        console.log(gGame.markedCount)
+        // console.log(gGame.markedCount)
         //elCell.classList.add('.flagged')
     } else if(event.button === 2 && elCell.innerHTML === FLAG_IMAGE){
         gBoard[i][j].isMarked = false
         // elCell.innerHTML = MINE_IMAGE
         elCell.innerHTML = ''
         gGame.markedCount--
-        console.log(gGame.markedCount)
+        // console.log(gGame.markedCount)
         elCell.style.backgroundColor = 'pink'
-   }
+    }
     
 }
 
-function setMinesNegsCount(gMat ,k ,l){
+function setMinesNegsCount(k ,l){
     var negsCount = 0;
     for (var i = k - 1; i <= k + 1; i++) {
         if (i < 0 || i >= gLevelChosen.size) continue;
@@ -184,7 +180,7 @@ function expandShown(k, l){
                 elCellNeg.style.backgroundColor = 'white'
                 gBoard[k][l].isShown = true
                 gGame.shownCount++
-                elCellNeg.innerHTML = currCell.minesAroundCount
+                if(currCell.minesAroundCount !== 0) elCellNeg.innerHTML = currCell.minesAroundCount
                 }   
         }
     }
@@ -204,7 +200,7 @@ function checkGameOver(){
         // elBoard.classList.add = ('.endGame')
         gGame.isOn = false
         const elFinalResult = document.querySelector('.game-result')
-        elFinalResult.innerHTML = 'You lost!!!😫'
+        elFinalResult.innerHTML = ' You 😫lost!'
         return gGame.isOn
         }
     if( gLivesLostCount < gLevelChosen.lives && gGame.markedCount <= gLevelChosen.mines &&
@@ -214,7 +210,7 @@ function checkGameOver(){
         clearInterval(gTimerInterval)
         gGame.isOn = false
         const elFinalResult = document.querySelector('.game-result')
-        elFinalResult.innerHTML = 'You won!!!😎'
+        elFinalResult.innerHTML = 'You 😎won!'
     } return gGame.isOn
 
 }
@@ -231,13 +227,31 @@ function onTime(){
     const elTimer = document.querySelector('.seconds')
     elTimer.innerText = (Math.round(gGame.secsPassed) + '').padStart(2, '0')
     
-    const elShownCount = document.querySelector('.shownCount')
-    elShownCount.innerHTML = gGame.shownCount
+    // const elShownCount = document.querySelector('.shownCount')
+    // elShownCount.innerHTML = gGame.shownCount
 
     // const elMarkedCount = document.querySelector('.markedCount')
     // elMarkedCount.innerHTML = gGame.markedCount
 }
 
+function onShowLives(){
+    livesArray = []
+    while(livesArray.length < gLevelChosen.lives){
+        livesArray.push(LIFE + ' ')
+    }
+    const elLives = document.querySelector('.lives')
+    elLives.innerHTML = 'Lives left: ' + livesArray.join(" ")
+}
 
+function onLiveLost(){
+    livesArray.shift()
+    livesArray.push(LIFE_LOST)
+    const elLives = document.querySelector('.lives')
+    elLives.innerHTML = 'Lives left: ' + livesArray.join(" ")
+}
 
-
+function onSmiley(){
+    const elSmiley = document.querySelector('.game-result')
+    elSmiley.innerHTML = '😐'
+    onLevelChosen(gChoice)
+}
