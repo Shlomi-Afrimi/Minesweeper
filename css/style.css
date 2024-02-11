@@ -22,10 +22,6 @@ body{
     background-color: lightblue;
 }
 
-/* .board-container{
-    
-} */
-
 .top-data{
     text-align: center;
     margin-bottom: 10px;
@@ -41,6 +37,20 @@ body{
 
 .game-level{
     text-align: center;
+}
+
+.game-level-btn{
+    height: 3em;
+    font-size: 1em;
+    border-radius: 40%;
+    padding: 0.5em;
+    background-color: purple;
+    font-family: cursive;
+    color: white;
+}
+
+.game-level-btn:hover{
+    background-color: blue;
 }
 
 table {
@@ -87,6 +97,11 @@ table {
     font-weight: bold;
 }
 
+.Best-times{
+    text-align: center;
+    font-size: 1em;
+}
+
 .pic{
     width: 2em;
 }
@@ -99,7 +114,3 @@ table {
 .hide{
     display: none;
 }
-
-/* .endGame{
-    pointer-events: none;
-} */

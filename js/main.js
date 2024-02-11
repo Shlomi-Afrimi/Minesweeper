@@ -10,18 +10,42 @@ var gLevel = [{size: 4, mines: 2, lives: 1},
     {size: 12, mines: 32, lives:3}
 ]
 
-var startTime 
-var gChoice
-var gLevelChosen
+//Retrieve best times from localStorage
+retrieveBestTimes()
+function retrieveBestTimes(){
+    
+    for(var i = 0; i < 3; i++){
+        var levelPlayedRecord =''
+        switch(i){
+            case 0:
+                levelPlayedRecord = 'Beginner'
+                break
+            case 1:
+                levelPlayedRecord = 'Medium'
+                break
+            case 2:
+                levelPlayedRecord = 'Expert'
+        }
+        if(localStorage.levelPlayedRecord !==null || isNaN(+localStorage.levelPlayedRecord) === false){
+            var elRecord 
+            elRecord = document.querySelector(`.${levelPlayedRecord}`)
+            elRecord.innerText = localStorage.levelPlayedRecord
+            }
+    }
+}
+
+var gStartTime 
+var gChoice = 0
 var gTimerInterval
-gLevelChosen = gLevel[0]
+var gLevelChosen = gLevel[0]
+
+
+var gLivesArray = [LIFE]
 var gBoard = []
 var gMat = []
-var livesArray = [LIFE]
-
 var gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
 var gLivesLostCount = 0
-var clicksCount = 0
+var gClicksCount = 0
 
 function onLevelChosen(choice){
     const elSmiley = document.querySelector('.game-result')
@@ -41,7 +65,7 @@ function onLevelChosen(choice){
 function onInit(){
     gBoard =[]
     gMat = []
-    clicksCount = 0
+    gClicksCount = 0
     gGame = { isOn: true, shownCount: 0, markedCount: 0, secsPassed: 0 }
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -97,11 +121,11 @@ function renderBoard(gBoard){
 }
 
 function onCellClicked(elCell, cellI, cellJ){
-    if(clicksCount === 0){
+    if(gClicksCount === 0){
         gBoard = buildBoard2(gBoard,cellI,cellJ)
-        clicksCount = 1
+        gClicksCount = 1
         gGame.secsPassed = 0
-        startTime = Date.now()
+        gStartTime = Date.now()
         gTimerInterval = setInterval(onTime ,500)
     }
     if(!gGame.isOn)return
@@ -124,12 +148,11 @@ function onCellClicked(elCell, cellI, cellJ){
     if (gBoard[cellI][cellJ].minesAroundCount > 0) {
         elCell.innerHTML = gBoard[cellI][cellJ].minesAroundCount
     }
-    if((gBoard[cellI][cellJ].isMine === false) && gBoard[cellI][cellJ].minesAroundCount === 0) expandShown(cellI, cellJ)
+    if(gBoard[cellI][cellJ].minesAroundCount === 0) expandShown(cellI, cellJ)
 }
 
 function onCellRightClicked(i ,j , event){
     if (!gGame.isOn) return
-    // console.log(checkGameOver())
     const elCell = document.querySelector(`.cell-${i}-${j}`)
     if(event.button === 2 && elCell.innerHTML === '' && elCell.style.backgroundColor !== 'red' && elCell.style.backgroundColor !== 'white') {
         gBoard[i][j].isMarked =true
@@ -137,14 +160,10 @@ function onCellRightClicked(i ,j , event){
         gGame.markedCount++
         elCell.style.backgroundColor ='yellow'
         checkGameOver()
-        // console.log(gGame.markedCount)
-        //elCell.classList.add('.flagged')
     } else if(event.button === 2 && elCell.innerHTML === FLAG_IMAGE){
         gBoard[i][j].isMarked = false
-        // elCell.innerHTML = MINE_IMAGE
         elCell.innerHTML = ''
         gGame.markedCount--
-        // console.log(gGame.markedCount)
         elCell.style.backgroundColor = 'pink'
     }
     
@@ -164,90 +183,92 @@ function setMinesNegsCount(k ,l){
     return negsCount
 }
 
-// function expandShown(gMat, elCell, k, l){
 function expandShown(k, l){
     for (var i = k - 1; i <= k + 1; i++) {
         if (i < 0 || i >= gLevelChosen.size) continue;
         for (var j = l - 1; j <= l + 1; j++) {
-            //var negsCount = 0
             if (j < 0 || j >= gLevelChosen.size) continue;
             if (i === k && j === l) continue;
             const currCell = gBoard[i][j]
             const elCellNeg = document.querySelector(`.cell-${i}-${j}`)
 
             if (currCell.isMine === true || elCellNeg.style.backgroundColor === 'yellow') continue
-            else if(elCellNeg.style.backgroundColor !== 'white'){ //if(elCellNeg.style.backgroundColor === 'lightgrey'){
-                elCellNeg.style.backgroundColor = 'white'
-                gBoard[k][l].isShown = true
-                gGame.shownCount++
-                if(currCell.minesAroundCount !== 0) elCellNeg.innerHTML = currCell.minesAroundCount
-                }   
+            else if(elCellNeg.style.backgroundColor !== 'white'){ 
+                if(gBoard[i][j].minesAroundCount === 0   ) {
+                    gBoard[i][j].isShown = true
+                    gGame.shownCount++
+                    elCellNeg.style.backgroundColor = 'white'
+                    expandShown(i, j) 
+                }    
+                else {
+                    gBoard[i][j].isShown = true
+                    gGame.shownCount++
+                    elCellNeg.style.backgroundColor = 'white'
+                    elCellNeg.innerHTML = currCell.minesAroundCount
+                    }
+                }
         }
     }
     checkGameOver()
 }
 
-//fine without it
-function onCellMarked(elCell){
-
+function checkGameOver(){
+    isLost()
+    if (gGame.isOn) isWon()
 }
 
-function checkGameOver(){
+function isLost(){
     if(gLivesLostCount >= gLevelChosen.lives){
-        console.log('lost' , gLivesLostCount , gLevelChosen.lives)
+        for (var i = 0; i < gLevelChosen.size; i++){
+            for ( var j = 0; j < gLevelChosen.size; j++){
+                if(gBoard[i][j].isMine){
+                    const elCell = document.querySelector(`.cell-${i}-${j}`)
+                    elCell.innerHTML = '💣'
+                }
+            }
+        }
         clearInterval(gTimerInterval)
-        // var elBoard = document.querySelector('.board-container')
-        // elBoard.classList.add = ('.endGame')
         gGame.isOn = false
         const elFinalResult = document.querySelector('.game-result')
         elFinalResult.innerHTML = ' You 😫lost!'
         return gGame.isOn
         }
-    if( gLivesLostCount < gLevelChosen.lives && gGame.markedCount <= gLevelChosen.mines &&
+}
+
+function isWon(){
+    if( gLivesLostCount < gLevelChosen.lives && (gGame.markedCount + gLivesLostCount) === gLevelChosen.mines &&
         gGame.shownCount + gGame.markedCount + gLivesLostCount === gLevelChosen.size**2){
-        console.log(gGame.markedCount , gLivesLostCount)
-        console.log(gGame.shownCount + gGame.markedCount + gLivesLostCount)
+        gGame.secsPassed = (Date.now() - gStartTime)/1000    
+        const gameTime = (Math.round(gGame.secsPassed) + '').padStart(2, '0')
+        onRecordCheck(gameTime)
         clearInterval(gTimerInterval)
         gGame.isOn = false
         const elFinalResult = document.querySelector('.game-result')
         elFinalResult.innerHTML = 'You 😎won!'
-    } return gGame.isOn
-
-}
-//optional
-function onGameOver() {
-    clearInterval(gTimerInterval)
-    
+        return gGame.isOn
+    } 
 }
 
 function onTime(){
-    gGame.secsPassed = (Date.now() - startTime)/1000
-    // console.log(gGame.secsPassed)
-
+    gGame.secsPassed = (Date.now() - gStartTime)/1000
     const elTimer = document.querySelector('.seconds')
     elTimer.innerText = (Math.round(gGame.secsPassed) + '').padStart(2, '0')
-    
-    // const elShownCount = document.querySelector('.shownCount')
-    // elShownCount.innerHTML = gGame.shownCount
-
-    // const elMarkedCount = document.querySelector('.markedCount')
-    // elMarkedCount.innerHTML = gGame.markedCount
 }
 
 function onShowLives(){
-    livesArray = []
-    while(livesArray.length < gLevelChosen.lives){
-        livesArray.push(LIFE + ' ')
+    gLivesArray = []
+    while(gLivesArray.length < gLevelChosen.lives){
+        gLivesArray.push(LIFE + ' ')
     }
     const elLives = document.querySelector('.lives')
-    elLives.innerHTML = 'Lives left: ' + livesArray.join(" ")
+    elLives.innerHTML = 'Lives left: ' + gLivesArray.join(" ")
 }
 
 function onLiveLost(){
-    livesArray.shift()
-    livesArray.push(LIFE_LOST)
+    gLivesArray.shift()
+    gLivesArray.push(LIFE_LOST)
     const elLives = document.querySelector('.lives')
-    elLives.innerHTML = 'Lives left: ' + livesArray.join(" ")
+    elLives.innerHTML = 'Lives left: ' + gLivesArray.join(" ")
 }
 
 function onSmiley(){
@@ -255,3 +276,27 @@ function onSmiley(){
     elSmiley.innerHTML = '😐'
     onLevelChosen(gChoice)
 }
+
+/*-----------------bonus-------------------*/
+
+function onRecordCheck(gameTime){
+    var levelPlayedRecord
+    switch(gChoice){
+        case 0:
+            levelPlayedRecord = 'Beginner'
+            break
+        case 1:
+            levelPlayedRecord = 'Medium'
+            break
+        case 2:
+            levelPlayedRecord = 'Expert'
+    }
+    if(localStorage.levelPlayedRecord === null || isNaN(localStorage.levelPlayedRecord) 
+         || gameTime < +localStorage.levelPlayedRecord){
+        localStorage.levelPlayedRecord = gameTime
+        const elRecord = document.querySelector(`.${levelPlayedRecord}`)
+        elRecord.innerHTML = localStorage.levelPlayedRecord
+    }
+}
+
+
